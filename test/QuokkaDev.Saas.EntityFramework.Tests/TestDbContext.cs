@@ -20,7 +20,7 @@ namespace QuokkaDev.Saas.EntityFramework.Tests
         {
         }
 
-        public TestDbContext(DbContextOptions<TestDbContext> context, string tenantsTableName, int tenantIdentifierMaxLength)
+        public TestDbContext(DbContextOptions<TestDbContext> context, string tenantsTableName, int tenantIdentifierMaxLength) : base(context)
         {
             this.tenantsTableName = tenantsTableName;
             this.tenantIdentifierMaxLength = tenantIdentifierMaxLength;
@@ -34,8 +34,6 @@ namespace QuokkaDev.Saas.EntityFramework.Tests
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseInMemoryDatabase("temp", new InMemoryDatabaseRoot());
-            base.OnConfiguring(optionsBuilder);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

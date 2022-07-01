@@ -49,9 +49,7 @@ public class DbContextExtensionsUnitTest
 
         // Act
         context.Orders.Add(o);
-
         Action setTenantInvocation = () => context.SetTenant(tenantAccessor);
-        context.SaveChanges();
 
         // Assert
         setTenantInvocation.Should().NotThrow<Exception>();

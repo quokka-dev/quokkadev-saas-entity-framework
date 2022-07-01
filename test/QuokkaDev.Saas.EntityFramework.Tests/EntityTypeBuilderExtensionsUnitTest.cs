@@ -51,7 +51,7 @@ namespace QuokkaDev.Saas.EntityFramework.Tests
         }
 
         [Fact(DisplayName = "ConfigureTenant should work properly")]
-        public async Task ConfigureTenant_Should_Work_Properly()
+        public void ConfigureTenant_Should_Work_Properly()
         {
             // Arrange            
 
@@ -59,7 +59,7 @@ namespace QuokkaDev.Saas.EntityFramework.Tests
             optionsBuilder.UseInMemoryDatabase("temp", new InMemoryDatabaseRoot());
 
             // Act
-            using TestDbContext context = new TestDbContext(optionsBuilder.Options, "_tenants", 1000);
+            using TestDbContext context = new(optionsBuilder.Options, "_tenants", 1000);
             var entityType = context.Model.FindEntityType(typeof(Tenant<int>));
 
             // Assert

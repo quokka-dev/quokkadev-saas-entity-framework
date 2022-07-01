@@ -14,7 +14,7 @@ namespace QuokkaDev.Saas.EntityFramework
 
             foreach (var entity in context.ChangeTracker.Entries().Where(e => e.State == EntityState.Added))
             {
-                var property = entity.Properties.FirstOrDefault(p => p.Metadata?.Name == "Tenant");
+                var property = entity.Properties.FirstOrDefault(p => p.Metadata.Name == "Tenant");
                 if (property != null && string.IsNullOrEmpty(property.CurrentValue?.ToString()))
                 {
                     property.CurrentValue = tenant;
