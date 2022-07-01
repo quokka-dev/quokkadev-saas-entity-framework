@@ -10,7 +10,7 @@ namespace QuokkaDev.Saas.EntityFramework
         /// </summary>
         public static void SetTenant<T, TKey>(this DbContext context, ITenantAccessor<T, TKey> tenantAccessor) where T : Tenant<TKey>
         {
-            var tenant = tenantAccessor.Tenant?.Identifier;
+            var tenant = tenantAccessor.Tenant?.Identifier ?? throw new ArgumentNullException("tenant");
 
             foreach (var entity in context.ChangeTracker.Entries().Where(e => e.State == EntityState.Added))
             {

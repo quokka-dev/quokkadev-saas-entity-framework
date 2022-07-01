@@ -26,8 +26,8 @@ public class DbContextExtensionsUnitTest
     public void Tenant_Property_Is_Configured_On_New_Entities()
     {
         // Arrange 
-        Person p1 = new Person() { Id = 1, Name = "Joe" };
-        Person p2 = new Person() { Id = 2, Name = "Jack", Tenant = "another-tenant" };
+        Person p1 = new() { Id = 1, Name = "Joe" };
+        Person p2 = new() { Id = 2, Name = "Jack", Tenant = "another-tenant" };
 
         // Act
         context.People.Add(p1);
@@ -45,7 +45,7 @@ public class DbContextExtensionsUnitTest
     public void New_Entities_Without_Tenant_Property_Are_Unaffected()
     {
         // Arrange 
-        Order o = new Order() { Id = 1, CustomerName = "IBM" };
+        Order o = new() { Id = 1, CustomerName = "IBM" };
 
         // Act
         context.Orders.Add(o);
@@ -59,7 +59,7 @@ public class DbContextExtensionsUnitTest
     public void Modified_Entities_Are_Unaffected()
     {
         // Arrange
-        Person p1 = new Person() { Id = 3, Name = "Mike", Tenant = "my-tenant-identifier" };
+        Person p1 = new() { Id = 3, Name = "Mike", Tenant = "my-tenant-identifier" };
 
         // Act
         context.People.Add(p1);
@@ -72,5 +72,22 @@ public class DbContextExtensionsUnitTest
 
         // Assert
         p1.Tenant.Should().BeNull();
+    }
+
+    [Fact(DisplayName = "Empty tenant should throw exception")]
+    public void Empty_Tenant_Should_Throw_Exception()
+    {
+        // Arrange
+        Person p1 = new() { Id = 3, Name = "Mike" };
+
+        var tenantAccessorMock = new Mock<ITenantAccessor<Tenant<int>, int>>();
+        tenantAccessorMock.Setup(m => m.Tenant).Returns((Tenant<int>?)null);
+
+        // Act
+        context.People.Add(p1);
+        var setTenantInvocation = () => context.SetTenant(tenantAccessorMock.Object);
+
+        // Assert
+        setTenantInvocation.Should().Throw<ArgumentNullException>();
     }
 }
