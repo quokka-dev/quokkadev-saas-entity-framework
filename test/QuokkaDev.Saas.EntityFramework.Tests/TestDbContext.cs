@@ -7,7 +7,9 @@ namespace QuokkaDev.Saas.EntityFramework.Tests
     public class TestDbContext : DbContext
     {
         private readonly bool addTenantFilter;
-        private readonly ITenantAccessor<Tenant<int>, int> tenantAccessor;
+        private readonly ITenantAccessor<Tenant<int>, int>? tenantAccessor;
+        private readonly string? tenantsTableName;
+        private readonly int tenantIdentifierMaxLength;
 
         public DbSet<Tenant<int>> Tenants { get; set; } = null!;
         public DbSet<Person> People { get; set; } = null!;
@@ -18,23 +20,40 @@ namespace QuokkaDev.Saas.EntityFramework.Tests
         {
         }
 
-        public TestDbContext(DbContextOptions<TestDbContext> context, bool addTenantFilter = false, ITenantAccessor<Tenant<int>, int> tenantAccessor = null) : base(context)
+        public TestDbContext(DbContextOptions<TestDbContext> context, string tenantsTableName, int tenantIdentifierMaxLength)
+        {
+            this.tenantsTableName = tenantsTableName;
+            this.tenantIdentifierMaxLength = tenantIdentifierMaxLength;
+        }
+
+        public TestDbContext(DbContextOptions<TestDbContext> context, bool addTenantFilter = false, ITenantAccessor<Tenant<int>, int>? tenantAccessor = null) : base(context)
         {
             this.addTenantFilter = addTenantFilter;
             this.tenantAccessor = tenantAccessor;
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (addTenantFilter)
-            {
-                modelBuilder.Entity<TestFilter>().AddPerTenantFilter(tenantAccessor);
-            }
+            optionsBuilder.UseInMemoryDatabase("temp", new InMemoryDatabaseRoot());
+            base.OnConfiguring(optionsBuilder);
         }
 
-        public static TestDbContext GetConfiguredContext(bool addTenantFilter = false, ITenantAccessor<Tenant<int>, int> tenantAccessor = null)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            DbContextOptionsBuilder<TestDbContext> optionsBuilder = new DbContextOptionsBuilder<TestDbContext>();
+            if (!string.IsNullOrEmpty(tenantsTableName))
+            {
+                modelBuilder.ConfigureTenant<Tenant<int>, int>(tenantsTableName, tenantIdentifierMaxLength);
+            }
+            if (addTenantFilter)
+            {
+                modelBuilder.Entity<TestFilter>().AddPerTenantFilter(tenantAccessor!);
+            }
+            base.OnModelCreating(modelBuilder);
+        }
+
+        public static TestDbContext GetConfiguredContext(bool addTenantFilter = false, ITenantAccessor<Tenant<int>, int>? tenantAccessor = null)
+        {
+            DbContextOptionsBuilder<TestDbContext> optionsBuilder = new();
             optionsBuilder.UseInMemoryDatabase("temp", new InMemoryDatabaseRoot());
             var context = new TestDbContext(optionsBuilder.Options, addTenantFilter, tenantAccessor);
             context.Tenants.Add(new Tenant<int>(1, "my-tenant-identifier"));
@@ -73,6 +92,6 @@ namespace QuokkaDev.Saas.EntityFramework.Tests
     public class TestFilter
     {
         public int Id { get; set; }
-        public string Tenant { get; set; }
+        public string? Tenant { get; set; }
     }
 }
