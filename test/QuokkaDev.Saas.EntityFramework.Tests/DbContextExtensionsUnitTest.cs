@@ -88,6 +88,6 @@ public class DbContextExtensionsUnitTest
         var setTenantInvocation = () => context.SetTenant(tenantAccessorMock.Object);
 
         // Assert
-        setTenantInvocation.Should().Throw<ArgumentNullException>();
+        setTenantInvocation.Should().Throw<InvalidOperationException>().WithMessage("Cannot resolve a valid Tenant");
     }
 }
